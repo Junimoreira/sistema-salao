@@ -1,1 +1,1 @@
-streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+streamlit run app.py --server.port 1000 --server.address 0.0.0.0
