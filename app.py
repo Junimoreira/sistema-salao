@@ -3,8 +3,26 @@ import pandas as pd
 import psycopg2
 import os
 import bcrypt
-
 from datetime import datetime
+
+st.markdown("""
+    <style>
+    .stMetric {
+        background-color: #f0f2f6;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
+st.set_page_config(
+    page_title="Sistema Salão",
+    page_icon="💈",
+    layout="wide"
+)
+
+
 
 # =========================
 # 🔌 CONEXÃO COM BANCO
@@ -42,7 +60,8 @@ conn.commit()
 # =========================
 # 🔐 LOGIN / CADASTRO
 # =========================
-st.title("💈 Sistema para Salão")
+st.markdown("## 💈 Sistema de Gestão para Salão")
+st.markdown("---")
 
 menu = st.sidebar.selectbox("Menu", ["Login", "Cadastro"])
 
@@ -100,6 +119,9 @@ elif menu == "Login":
 
         except Exception as e:
             st.error(f"Erro: {e}")
+
+	st.sidebar.write(f"👤 Usuário ID: {usuario_id}")
+
 # =========================
 # 🏠 SISTEMA LOGADO
 # =========================
@@ -114,10 +136,15 @@ if "usuario_id" in st.session_state:
     # =========================
     st.subheader("➕ Novo Registro")
 
-    tipo = st.selectbox("Tipo", ["Entrada", "Saída"])
-    categoria = st.selectbox("Categoria", ["Corte", "Escova", "Barba", "Produto", "Despesa"])
-    descricao = st.text_input("Descrição")
-    valor = st.number_input("Valor", min_value=0.0, format="%.2f")
+    col1, col2 = st.columns(2)
+
+	with col1:
+    		tipo = st.selectbox("Tipo", ["Entrada", "Saída"])
+    		categoria = st.selectbox("Categoria", ["Corte", "Escova", "Barba", "Produto", "Despesa"])
+
+	with col2:
+    		descricao = st.text_input("Descrição")
+    		valor = st.number_input("Valor", min_value=0.0, format="%.2f")
 
     if st.button("Salvar"):
         data = datetime.now().date()
@@ -157,11 +184,14 @@ if "usuario_id" in st.session_state:
         st.subheader("📋 Registros")
 
         for index, row in df.iterrows():
-            col1, col2, col3, col4 = st.columns([2, 2, 2, 1])
+            col1, col2, col3 = st.columns(3)
 
-            col1.write(row["categoria"])
-            col2.write(row["descricao"])
-            col3.write(f"R$ {row['valor']:.2f}")
+		col1.metric("💰 Entradas", f"R$ {entradas:.2f}")
+		col2.metric("💸 Saídas", f"R$ {saidas:.2f}")
+		col3.metric("📈 Lucro", f"R$ {entradas - saidas:.2f}")
+
+ 		st.markdown("### 📋 Histórico de Movimentações")
+    		st.markdown("---")
 
             if col4.button("Excluir", key=row["id"]):
                 cursor.execute(
@@ -173,6 +203,11 @@ if "usuario_id" in st.session_state:
 
     else:
         st.info("Nenhum registro ainda.")
+
+	st.subheader("📊 Receita por Categoria")
+
+	grafico = df.groupby("categoria")["valor"].sum()
+	st.bar_chart(grafico)
 
     # =========================
     # 🚪 LOGOUT
