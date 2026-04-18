@@ -1,0 +1,11 @@
+
+hostname: dpg-d7h7ol4p3tds73aclkhg-a
+
+db_salao
+usuário: db_salao_user
+Senha: 5sReOlCZDCHYHB33nMI9G3B1A8jAN6d6
+
+Internal database: postgresql://db_salao_user:5sReOlCZDCHYHB33nMI9G3B1A8jAN6d6@dpg-d7h7ol4p3tds73aclkhg-a/db_salao
+external database: postgresql://db_salao_user:5sReOlCZDCHYHB33nMI9G3B1A8jAN6d6@dpg-d7h7ol4p3tds73aclkhg-a.oregon-postgres.render.com/db_salao
+psql: PGPASSWORD=5sReOlCZDCHYHB33nMI9G3B1A8jAN6d6 psql -h dpg-d7h7ol4p3tds73aclkhg-a.oregon-postgres.render.com -U db_salao_user db_salao
+
