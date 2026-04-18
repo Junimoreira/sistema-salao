@@ -55,18 +55,16 @@ if menu == "Cadastro":
     novo_usuario = st.text_input("Usuário")
     nova_senha = st.text_input("Senha", type="password")
 
-	
-
     if st.button("Cadastrar"):
-    senha_hash = bcrypt.hashpw(nova_senha.encode(), bcrypt.gensalt())
+        senha_hash = bcrypt.hashpw(nova_senha.encode(), bcrypt.gensalt())
 
-    cursor.execute(
-        "INSERT INTO usuarios (usuario, senha) VALUES (%s, %s)",
-        (novo_usuario, senha_hash.decode())
-    )
-    conn.commit()
+        cursor.execute(
+            "INSERT INTO usuarios (usuario, senha) VALUES (%s, %s)",
+            (novo_usuario, senha_hash.decode())
+        )
+        conn.commit()
 
-    st.success("Usuário criado!")
+        st.success("Usuário criado!")
 
 # =========================
 # 🔐 LOGIN
