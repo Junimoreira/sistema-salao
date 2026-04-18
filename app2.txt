@@ -186,14 +186,14 @@ if not df.empty:
     for index, row in df.iterrows():
         col1, col2, col3 = st.columns(3)
 
-        col1.metric("💰 Entradas", f"R$ {entradas:.2f}")
-        col2.metric("💸 Saídas", f"R$ {saidas:.2f}")
-        col3.metric("📈 Lucro", f"R$ {entradas - saidas:.2f}")
+    col1.metric("💰 Entradas", f"R$ {entradas:.2f}")
+    col2.metric("💸 Saídas", f"R$ {saidas:.2f}")
+    col3.metric("📈 Lucro", f"R$ {entradas - saidas:.2f}")
 
     st.markdown("### 📋 Histórico de Movimentações")
     st.markdown("---")
 
-    if col4.button("Excluir", key=row["id"]):
+        if col4.button("Excluir", key=row["id"]):
             cursor.execute(
                 "DELETE FROM caixa WHERE id=%s",
                 (row["id"],)
