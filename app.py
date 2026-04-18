@@ -76,8 +76,8 @@ elif menu == "Login":
 
     if st.button("Entrar"):
         try:
-    cursor.execute(
-        "SELECT * FROM usuarios WHERE usuario=%s",
+    		cursor.execute(
+        		"SELECT * FROM usuarios WHERE usuario=%s",
         (usuario,)
     )
     user = cursor.fetchone()
