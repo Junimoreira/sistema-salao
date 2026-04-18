@@ -78,8 +78,8 @@ elif menu == "Login":
         try:
     		cursor.execute(
         		"SELECT * FROM usuarios WHERE usuario=%s",
-        (usuario,)
-    )
+                  (usuario,)
+                )
     user = cursor.fetchone()
 
     if user:
