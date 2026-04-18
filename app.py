@@ -53,7 +53,7 @@ if menu == "Cadastro":
     st.subheader("Criar conta")
 
     novo_usuario = st.text_input("Usuário")
-#nova_senha = st.text_input("Senha", type="password")
+    nova_senha = st.text_input("Senha", type="password")
 
 	
 
