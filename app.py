@@ -74,36 +74,31 @@ elif menu == "Login":
     usuario = st.text_input("Usuário")
     senha = st.text_input("Senha", type="password")
 
-   if st.button("Entrar"):
-    try:
-        cursor.execute(
-            "SELECT * FROM usuarios WHERE usuario=%s",
-            (usuario,)
-        )
-        user = cursor.fetchone()
+    if st.button("Entrar"):
+        try:
+            cursor.execute(
+                "SELECT * FROM usuarios WHERE usuario=%s",
+                (usuario,)
+            )
+            user = cursor.fetchone()
 
-        if user:
-            senha_db = user[2]
+            if user:
+                senha_db = user[2]
 
-            # Verifica se já é bcrypt
-            if senha_db.startswith("$2b$"):
-                if bcrypt.checkpw(senha.encode(), senha_db.encode()):
-                    st.session_state["usuario_id"] = user[0]
-                    st.success("Login realizado!")
-                    st.rerun()
+                if senha_db.startswith("$2b$"):
+                    if bcrypt.checkpw(senha.encode(), senha_db.encode()):
+                        st.session_state["usuario_id"] = user[0]
+                        st.success("Login realizado!")
+                        st.rerun()
+                    else:
+                        st.error("Senha incorreta")
                 else:
-                    st.error("Senha incorreta")
+                    st.error("Usuário antigo precisa recadastrar senha")
             else:
-                st.error("Usuário antigo precisa recadastrar senha")
+                st.error("Usuário não encontrado")
 
-        else:
-            st.error("Usuário não encontrado")
-
-    except Exception as e:
-        st.error(f"Erro: {e}")
-
-except Exception as e:
-    st.error(f"Erro: {e}")
+        except Exception as e:
+            st.error(f"Erro: {e}")
 # =========================
 # 🏠 SISTEMA LOGADO
 # =========================
