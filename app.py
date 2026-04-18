@@ -60,10 +60,10 @@ conn.commit()
 # =========================
 # 🔐 LOGIN / CADASTRO
 # =========================
-st.markdown("## 💈 Sistema de Gestão para Salão")
-st.markdown("---")
+	st.markdown("## 💈 Sistema de Gestão para Salão")
+	st.markdown("---")
 
-menu = st.sidebar.selectbox("Menu", ["Login", "Cadastro"])
+	menu = st.sidebar.selectbox("Menu", ["Login", "Cadastro"])
 
 # =========================
 # 📝 CADASTRO
@@ -120,7 +120,7 @@ elif menu == "Login":
         except Exception as e:
             st.error(f"Erro: {e}")
 
-	st.sidebar.write(f"👤 Usuário ID: {usuario_id}")
+		st.sidebar.write(f"👤 Usuário ID: {usuario_id}")
 
 # =========================
 # 🏠 SISTEMA LOGADO
