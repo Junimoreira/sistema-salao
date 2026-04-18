@@ -75,18 +75,22 @@ elif menu == "Login":
     senha = st.text_input("Senha", type="password")
 
     if st.button("Entrar"):
-        cursor.execute(
-    "SELECT * FROM usuarios WHERE usuario=%s",
-    (usuario,)
-)
-user = cursor.fetchone()
+        try:
+    cursor.execute(
+        "SELECT * FROM usuarios WHERE usuario=%s",
+        (usuario,)
+    )
+    user = cursor.fetchone()
 
-if user and bcrypt.checkpw(senha.encode(), user[2].encode()):
-    st.session_state["usuario_id"] = user[0]
-    st.success("Login realizado!")
-    st.rerun()
-else:
-    st.error("Usuário ou senha inválidos")
+    if user and bcrypt.checkpw(senha.encode(), user[2].encode()):
+        st.session_state["usuario_id"] = user[0]
+        st.success("Login realizado!")
+        st.rerun()
+    else:
+        st.error("Usuário ou senha inválidos")
+
+except Exception as e:
+    st.error(f"Erro: {e}")
 
 # =========================
 # 🏠 SISTEMA LOGADO
