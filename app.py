@@ -24,6 +24,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+cursor.execute("SELECT usuario, senha FROM usuarios")
+usuarios = cursor.fetchall()
+
+for u in usuarios:
+    print(u)
+
 # =========================
 # 🔌 CONEXÃO COM BANCO
 # =========================
