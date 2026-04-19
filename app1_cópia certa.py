@@ -165,16 +165,10 @@ if "usuario_id" in st.session_state:
     # =========================
     # 📊 BUSCAR DADOS
     # =========================
-    data_inicio = st.date_input("Data inicial")
-    data_fim = st.date_input("Data final")
-
     cursor.execute(
-       """
-        SELECT * FROM caixa 
-        WHERE usuario_id=%s AND data BETWEEN %s AND %s
-       """,
-      (usuario_id, data_inicio, data_fim)
-   )
+        "SELECT * FROM caixa WHERE usuario_id=%s",
+        (usuario_id,)
+    )
     dados = cursor.fetchall()
 
     colunas = ["id", "usuario_id", "tipo", "categoria", "descricao", "valor", "data"]
