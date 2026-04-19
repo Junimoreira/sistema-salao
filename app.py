@@ -24,12 +24,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-cursor.execute("SELECT usuario, senha FROM usuarios")
-usuarios = cursor.fetchall()
-
-for u in usuarios:
-    print(u)
-
 # =========================
 # 🔌 CONEXÃO COM BANCO
 # =========================
@@ -38,69 +32,195 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 conn = psycopg2.connect(DATABASE_URL)
 cursor = conn.cursor()
 
+# =========================
+# 🧱 CRIAR TABELAS
+# =========================
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS usuarios (
+    id SERIAL PRIMARY KEY,
+    usuario TEXT,
+    senha TEXT
+)
+""")
 
-# Estado inicial
-if "logado" not in st.session_state:
-    st.session_state.logado = False
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS caixa (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER,
+    tipo TEXT,
+    categoria TEXT,
+    descricao TEXT,
+    valor REAL,
+    data DATE
+)
+""")
 
-if "tela" not in st.session_state:
-    st.session_state.tela = "login"
+conn.commit()
 
+# =========================
+# 🔐 LOGIN / CADASTRO
+# =========================
+st.markdown("## 💈 Sistema de Gestão para Salão")
+st.markdown("---")
 
-# ---------------- LOGIN ----------------
-if not st.session_state.logado:
-    st.title("🔐 Login")
+menu = st.sidebar.selectbox("Menu", ["Login", "Cadastro"])
 
-    usuario = st.text_input("Usuário", key="login_user")
-    senha = st.text_input("Senha", type="password", key="login_pass")
+# =========================
+# 📝 CADASTRO
+# =========================
+if menu == "Cadastro":
+    st.subheader("Criar conta")
 
-    if st.button("Entrar"):
-        if usuario == "admin" and senha == "123":  # depois você liga no banco
-            st.session_state.logado = True
-            st.session_state.tela = "menu"
-            st.rerun()
+    novo_usuario = st.text_input("Usuário", key="cad_usuario")
+    nova_senha = st.text_input("Senha", type="password", key="cad_senha")
+
+    if st.button("Cadastrar", key="btn_cadastrar"):
+        if novo_usuario and nova_senha:
+            senha_hash = bcrypt.hashpw(nova_senha.encode(), bcrypt.gensalt())
+
+            cursor.execute(
+                "INSERT INTO usuarios (usuario, senha) VALUES (%s, %s)",
+                (novo_usuario, senha_hash.decode())
+            )
+            conn.commit()
+
+            st.success("Usuário criado!")
         else:
-            st.error("Usuário ou senha inválidos")
+            st.warning("Preencha todos os campos")
 
+# =========================
+# 🔐 LOGIN
+# =========================
+elif menu == "Login":
+    st.subheader("Entrar")
 
-# ---------------- MENU (após login) ----------------
-else:
-    st.sidebar.title("Menu")
+    usuario = st.text_input("Usuário", key="login_usuario")
+    senha = st.text_input("Senha", type="password", key="login_senha")
 
-    opcao = st.sidebar.radio(
-        "Navegação",
-        ["Dashboard", "Categorias", "Produtos", "Movimentações", "Sair"]
+    if st.button("Entrar", key="btn_login"):
+        try:
+            cursor.execute(
+                "SELECT * FROM usuarios WHERE usuario=%s",
+                (usuario,)
+            )
+            user = cursor.fetchone()
+
+            if user:
+                senha_db = user[2]
+
+                if bcrypt.checkpw(senha.encode(), senha_db.encode()):
+                    st.session_state["usuario_id"] = user[0]
+                    st.success("Login realizado!")
+                    st.rerun()
+                else:
+                    st.error("Senha incorreta")
+            else:
+                st.error("Usuário não encontrado")
+
+        except Exception as e:
+            st.error(f"Erro: {e}")
+
+# =========================
+# 🏠 SISTEMA LOGADO
+# =========================
+if "usuario_id" in st.session_state:
+
+    usuario_id = st.session_state["usuario_id"]
+
+    st.sidebar.write(f"👤 Usuário ID: {usuario_id}")
+
+    st.title("💰 Controle de Caixa")
+
+    # =========================
+    # ➕ NOVO REGISTRO
+    # =========================
+    st.subheader("➕ Novo Registro")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        tipo = st.selectbox("Tipo", ["Entrada", "Saída"], key="tipo")
+        categoria = st.selectbox(
+            "Categoria",
+            ["Corte", "Escova", "Barba", "Produto", "Despesa"],
+            key="categoria"
+        )
+
+    with col2:
+        descricao = st.text_input("Descrição", key="desc")
+        valor = st.number_input("Valor", min_value=0.0, format="%.2f", key="valor")
+
+    if st.button("Salvar", key="btn_salvar"):
+        data = datetime.now().date()
+
+        cursor.execute("""
+        INSERT INTO caixa (usuario_id, tipo, categoria, descricao, valor, data)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        """, (usuario_id, tipo, categoria, descricao, valor, data))
+
+        conn.commit()
+        st.success("Salvo!")
+        st.rerun()
+
+    # =========================
+    # 📊 BUSCAR DADOS
+    # =========================
+    cursor.execute(
+        "SELECT * FROM caixa WHERE usuario_id=%s",
+        (usuario_id,)
     )
+    dados = cursor.fetchall()
 
-    # -------- DASHBOARD --------
-    if opcao == "Dashboard":
-        st.title("📊 Dashboard")
+    colunas = ["id", "usuario_id", "tipo", "categoria", "descricao", "valor", "data"]
+    df = pd.DataFrame(dados, columns=colunas)
 
-    # -------- CATEGORIAS --------
-    elif opcao == "Categorias":
-        st.title("📂 Cadastro de Categorias")
+    if not df.empty:
 
-        nome_categoria = st.text_input("Nome da categoria", key="cat_nome")
+        entradas = df[df["tipo"] == "Entrada"]["valor"].sum()
+        saidas = df[df["tipo"] == "Saída"]["valor"].sum()
 
-        if st.button("Salvar Categoria"):
-            st.success("Categoria salva!")
+        st.subheader("📊 Resumo")
+        col1, col2, col3 = st.columns(3)
 
-    # -------- PRODUTOS --------
-    elif opcao == "Produtos":
-        st.title("📦 Cadastro de Produtos")
+        col1.metric("💰 Entradas", f"R$ {entradas:.2f}")
+        col2.metric("💸 Saídas", f"R$ {saidas:.2f}")
+        col3.metric("📈 Lucro", f"R$ {entradas - saidas:.2f}")
 
-        nome = st.text_input("Nome do produto", key="prod_nome")
-        custo = st.number_input("Custo", key="prod_custo")
+        # =========================
+        # 📋 HISTÓRICO
+        # =========================
+        st.subheader("📋 Histórico de Movimentações")
+        st.markdown("---")
 
-        if st.button("Salvar Produto"):
-            st.success("Produto salvo!")
+        for index, row in df.iterrows():
+            c1, c2, c3, c4 = st.columns(4)
 
-    # -------- MOVIMENTAÇÕES --------
-    elif opcao == "Movimentações":
-        st.title("📋 Histórico de Movimentações")
+            c1.write(row["descricao"])
+            c2.write(row["categoria"])
+            c3.write(f"R$ {row['valor']:.2f}")
 
-    # -------- SAIR --------
-    elif opcao == "Sair":
-        st.session_state.logado = False
-        st.session_state.tela = "login"
+            if c4.button("Excluir", key=f"del_{row['id']}"):
+                cursor.execute(
+                    "DELETE FROM caixa WHERE id=%s",
+                    (row["id"],)
+                )
+                conn.commit()
+                st.rerun()
+
+        # =========================
+        # 📊 GRÁFICO
+        # =========================
+        st.subheader("📊 Receita por Categoria")
+
+        grafico = df.groupby("categoria")["valor"].sum()
+        st.bar_chart(grafico)
+
+    else:
+        st.info("Nenhum registro ainda.")
+
+    # =========================
+    # 🚪 LOGOUT
+    # =========================
+    if st.button("Sair", key="btn_sair"):
+        del st.session_state["usuario_id"]
         st.rerun()
