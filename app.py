@@ -1,4 +1,37 @@
 import streamlit as st
+import pandas as pd
+import psycopg2
+import os
+import bcrypt
+from datetime import datetime
+
+# =========================
+# 🎨 CONFIGURAÇÃO
+# =========================
+st.set_page_config(
+    page_title="Sistema Salão",
+    page_icon="💈",
+    layout="wide"
+)
+
+st.markdown("""
+<style>
+.stMetric {
+    background-color: #f0f2f6;
+    padding: 10px;
+    border-radius: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# =========================
+# 🔌 CONEXÃO COM BANCO
+# =========================
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+conn = psycopg2.connect(DATABASE_URL)
+cursor = conn.cursor()
+
 
 # Estado inicial
 if "logado" not in st.session_state:
