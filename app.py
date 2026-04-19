@@ -91,7 +91,7 @@ if menu == "Cadastro":
 # =========================
 # 🔐 LOGIN
 # =========================
-elif mgitenu == "Login":
+elif menu == "Login":
     st.subheader("Entrar")
 
     usuario = st.text_input("Usuário", key="login_usuario")
